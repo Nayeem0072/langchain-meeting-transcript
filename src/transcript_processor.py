@@ -236,11 +236,11 @@ Return JSON:
 def main():
     """CLI entry point."""
     if len(sys.argv) < 2:
-        print("Usage: python transcript_processor.py <input.json> [output.json]", file=sys.stderr)
+        print("Usage: python transcript_processor.py <input.json> [output.txt]", file=sys.stderr)
         sys.exit(1)
     
     input_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else None
+    output_file = sys.argv[2] if len(sys.argv) > 2 else "output_structured.txt"
     
     try:
         logger.info("Step 1/2: Initializing processor and loading input.")
@@ -254,12 +254,9 @@ def main():
         # Output results
         output_json = json.dumps(result, indent=2, ensure_ascii=False)
         
-        if output_file:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(output_json)
-            logger.info("Results saved to %s", output_file)
-        else:
-            print(output_json)
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(output_json)
+        logger.info("Results saved to %s", output_file)
         logger.info("All done.")
             
     except Exception as e:

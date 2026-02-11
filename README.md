@@ -36,16 +36,18 @@ If no `.env` file is provided, defaults will be used.
 
 ### Basic Usage
 
-Process a transcript file and output to stdout:
+Process a transcript file. Output is saved to `output.txt` by default:
 
 ```bash
 python src/transcript_processor.py example_input.json
 ```
 
-### Save Output to File
+### Custom Output File
+
+Specify a different output filename:
 
 ```bash
-python src/transcript_processor.py example_input.json output.json
+python src/transcript_processor.py example_input.json custom_output.json
 ```
 
 ### Logging and streaming
