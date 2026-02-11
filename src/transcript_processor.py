@@ -40,17 +40,29 @@ class StreamingStderrCallbackHandler(BaseCallbackHandler):
 
 
 class SpeakerSegment(BaseModel):
-    """Represents a segment of speech with speaker, text, and intent."""
-    speaker: str = Field(description="The name of the speaker, or 'Unknown' if not identified")
-    text: str = Field(description="The text content of what the speaker said")
+    """Represents a segment of speech with speaker, text, intent, and context metadata."""
+    speaker: str = Field(description="Speaker name")
+    text: str = Field(description="Exact text spoken")
     intent: Literal[
         "suggestion",
         "commitment",
         "information",
         "question",
         "decision",
-        "action_item"
-    ] = Field(description="The intent or purpose of this speech segment")
+        "action_item",
+        "agreement",
+        "clarification",
+        "other",
+    ] = Field(description="Conversational role / intent of the segment")
+    reason: str = Field(description="Short explanation for the intent label")
+    resolved_context: str = Field(
+        default="",
+        description="What earlier topic this refers to, if applicable; empty if not applicable",
+    )
+    context_unclear: bool = Field(
+        default=False,
+        description="True if reference or meaning cannot be resolved from context",
+    )
 
 
 class TranscriptSegments(BaseModel):
@@ -82,22 +94,45 @@ class TranscriptProcessor:
         
         # Create prompt template
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an expert at analyzing meeting transcripts. 
-Your task is to break down the transcript into individual speaker segments and classify each segment's intent.
+            ("system", """You are an expert at analyzing meeting transcripts.
 
-For each segment, identify:
-1. The speaker name (use "Unknown" if the speaker cannot be identified)
-2. The exact text spoken
-3. The intent category:
-   - "suggestion": Proposals, recommendations, or ideas
-   - "commitment": Promises, agreements to act, or confirmations
-   - "information": Facts, updates, or information shared
-   - "question": Questions asked
-   - "decision": Decisions made or conclusions reached
-   - "action_item": Tasks assigned or action items identified
+Your task is to break down the transcript into speaker segments and classify each segment's conversational role.
 
-Return a JSON object with a "segments" key containing a list of all speaker segments in the order they appear in the transcript."""),
-            ("human", "Analyze the following meeting transcript:\n\n{transcript}")
+CRITICAL:
+Segments must be interpreted using the surrounding conversation context, not in isolation.
+
+For each segment identify:
+
+1. speaker — speaker name
+2. text — exact text spoken
+3. intent — one of:
+   - suggestion
+   - commitment
+   - information
+   - question
+   - decision
+   - action_item
+   - agreement
+   - clarification
+   - other
+
+4. reason — short explanation for the label
+5. resolved_context — what earlier topic this refers to (if applicable)
+6. context_unclear — true if reference cannot be resolved
+
+RULES:
+- Agreement ≠ decision
+- Short acknowledgements are NOT commitments
+- Questions referring to earlier topics must include resolved_context
+- If meaning depends on missing context, set context_unclear = true
+- Do not guess hidden actions
+
+Return JSON:
+{{
+  "segments": [ ... ]
+}}
+"""),
+            ("human", "Analyze the following meeting transcript:\n\n{transcript}"),
         ])
     
     def process(self, transcript_raw: str) -> List[SpeakerSegment]:

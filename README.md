@@ -70,19 +70,36 @@ The input JSON file must contain a `transcript_raw` field:
 
 ## Output Format
 
-The output is a JSON array of speaker segments:
+The output is a JSON array of speaker segments. Each segment includes:
+
+| Field | Description |
+|-------|-------------|
+| `speaker` | Speaker name |
+| `text` | Exact text spoken |
+| `intent` | One of: suggestion, commitment, information, question, decision, action_item, agreement, clarification, other |
+| `reason` | Short explanation for the intent label |
+| `resolved_context` | What earlier topic this refers to (if applicable); empty string if not |
+| `context_unclear` | `true` if reference or meaning cannot be resolved from context |
+
+Example:
 
 ```json
 [
   {
     "speaker": "Unknown",
     "text": "We should send the proposal today.",
-    "intent": "suggestion"
+    "intent": "suggestion",
+    "reason": "Proposes a concrete next step.",
+    "resolved_context": "",
+    "context_unclear": false
   },
   {
     "speaker": "John",
     "text": "I'll do that.",
-    "intent": "commitment"
+    "intent": "commitment",
+    "reason": "Explicit promise to perform the suggested action.",
+    "resolved_context": "Sending the proposal",
+    "context_unclear": false
   }
 ]
 ```
@@ -90,11 +107,14 @@ The output is a JSON array of speaker segments:
 ## Intent Categories
 
 - `suggestion` - Proposals or recommendations
-- `commitment` - Promises or agreements to act
+- `commitment` - Promises or agreements to act (not short acknowledgements)
 - `information` - Facts or updates shared
 - `question` - Questions asked
-- `decision` - Decisions made
+- `decision` - Decisions made (distinct from agreement)
 - `action_item` - Tasks assigned
+- `agreement` - Agreement with a prior point
+- `clarification` - Seeking or giving clarification
+- `other` - Other conversational role
 
 ## Project Structure
 
