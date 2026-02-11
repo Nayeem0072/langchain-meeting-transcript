@@ -42,7 +42,7 @@ class StreamingStderrCallbackHandler(BaseCallbackHandler):
 class SpeakerSegment(BaseModel):
     """Represents a segment of speech with speaker, text, intent, and context metadata."""
     speaker: str = Field(description="Speaker name")
-    text: str = Field(description="Exact text spoken")
+    text: str = Field(description="Exact text spoken (must be exact substring from transcript)")
     intent: Literal[
         "suggestion",
         "commitment",
@@ -52,12 +52,11 @@ class SpeakerSegment(BaseModel):
         "action_item",
         "agreement",
         "clarification",
-        "other",
     ] = Field(description="Conversational role / intent of the segment")
     reason: str = Field(description="Short explanation for the intent label")
     resolved_context: str = Field(
         default="",
-        description="What earlier topic this refers to, if applicable; empty if not applicable",
+        description="What earlier topic this refers to, if applicable; empty string if not applicable",
     )
     context_unclear: bool = Field(
         default=False,
@@ -94,93 +93,111 @@ class TranscriptProcessor:
         
         # Create prompt template
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an AI system that extracts WORK-RELEVANT operational content from meeting transcripts.
+            ("system", """You are an AI system that extracts ONLY WORK-RELEVANT operational content from meeting transcripts.
 
-CRITICAL PRINCIPLE:
-Segments must be interpreted using the surrounding conversation context, not in isolation.
-Short statements, acknowledgements, or questions may depend on earlier discussion and must be resolved using context.
+Your task is analytical, NOT generative.
+
+You are NOT writing a summary.
+You are NOT continuing patterns.
+You are NOT predicting what comes next.
+
+You must ONLY extract segments that EXPLICITLY EXIST in the transcript text.
+
+━━━━━━━━━━━━━━━━━━
+CRITICAL ANTI-HALLUCINATION RULES
+━━━━━━━━━━━━━━━━━━
+
+• NEVER invent dialogue
+• NEVER repeat a segment unless it appears again verbatim in the transcript
+• If the same segment text appears multiple times in output but not in transcript → you are hallucinating
+• Each output segment must map to a real, unique position in the transcript
+• STOP extraction when transcript content ends — do NOT continue pattern
+
+If unsure whether a segment exists → DO NOT OUTPUT IT.
+
+━━━━━━━━━━━━━━━━━━
+CONTEXT INTERPRETATION RULE
+━━━━━━━━━━━━━━━━━━
+
+Segments must be interpreted using surrounding conversation context, not in isolation.
+However, context may ONLY come from the provided transcript.
+
+Do NOT infer missing meetings, systems, tickets, or processes.
 
 ━━━━━━━━━━━━━━━━━━
 STEP 1 — SEGMENTATION
 ━━━━━━━━━━━━━━━━━━
-Break the transcript into speaker segments. Each segment should represent one speaker turn.
 
+Break transcript into speaker turns exactly as written.
 
 ━━━━━━━━━━━━━━━━━━
-STEP 2 — WORK RELEVANCE
+STEP 2 — HARD WORK FILTER
 ━━━━━━━━━━━━━━━━━━
 
-For each segment, first determine if it is WORK-RELEVANT.
+Only keep segments related to:
 
-A segment is WORK-RELEVANT only if it relates to:
-- Tasks or action items
-- Decisions
-- Planning
-- Timelines or deadlines
-- Responsibilities/ownership
-- Risks or issues
-- Project, product, technical, or business discussion
+• tasks
+• decisions
+• plans
+• timelines
+• ownership
+• risks
+• project/product/technical/business discussion
 
-NOT work-relevant:
-- Small talk
-- Greetings
-- Jokes/humor
-- Social chatter
-- Off-topic remarks
-- Random personal comments
-- Noise or unclear ASR fragments/errors
+DISCARD completely:
 
-Most segments will be non-work-related. That is expected.
+• small talk
+• jokes
+• greetings
+• filler words
+• ASR noise
+• unclear fragments
+• social talk
+
+Do NOT output discarded segments.
 
 ━━━━━━━━━━━━━━━━━━
 STEP 3 — INTENT CLASSIFICATION
 ━━━━━━━━━━━━━━━━━━
 
-If work_relevance = false:
-    intent = "other"
+For each remaining segment classify ONE:
 
-If work_relevance = true:
-    intent must be ONE of:
-
-- suggestion      → proposal or idea
-- commitment      → promise to do something
-- information     → status, facts, updates
-- question        → asking for information
-- decision        → conclusion or agreement reached
-- action_item     → task assignment or clear follow-up work
-- agreement       → supporting or approving an idea
-- clarification   → resolving ambiguity about earlier content
+suggestion | commitment | information | question | decision | action_item | agreement | clarification
 
 ━━━━━━━━━━━━━━━━━━
-FOR EACH SEGMENT OUTPUT:
+OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━
 
-1. speaker
-2. text (exact spoken text)
-3. work_relevance (true/false)
-4. intent (as defined above)
-5. reason (short explanation for classification)
-6. resolved_context (what earlier topic this refers to, if applicable)
-7. context_unclear (true if reference cannot be resolved)
+Return STRICT JSON.
 
-━━━━━━━━━━━━━━━━━━
-RULES:
-━━━━━━━━━━━━━━━━━━
+Each segment must include:
 
-- Do NOT over-analyze non-work segments.
-- Do NOT analyze segments in isolation; use conversation history.
-- Agreement ≠ decision.
-- Short acknowledgements are NOT commitments.
-- Humor and social responses = work_relevance false.
-- If a segment depends on earlier context, fill resolved_context.
-- Questions referring to earlier topics must include resolved_context
-- If context cannot be determined, set context_unclear = true.
-- Do not invent hidden actions or decisions.
-
-Return JSON:
 {{
-  "segments": [...]
+  "speaker": "",
+  "text": "",              ← EXACT substring from transcript
+  "intent": "",
+  "reason": "",
+  "resolved_context": "",
+  "context_unclear": false
 }}
+
+━━━━━━━━━━━━━━━━━━
+LOOP PREVENTION DIRECTIVE
+━━━━━━━━━━━━━━━━━━
+
+Before producing each segment, internally verify:
+
+1. Does this exact text appear in transcript?
+2. Has this exact text already been output?
+3. Am I continuing a pattern instead of analyzing new transcript content?
+
+If any answer is YES → DO NOT OUTPUT.
+
+When no more valid segments remain → STOP.
+
+Do not pad the list.
+Do not repeat structures.
+Do not continue patterns.
 """),
             ("human", "Analyze the following meeting transcript:\n\n{transcript}"),
         ])
