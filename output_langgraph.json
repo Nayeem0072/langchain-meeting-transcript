@@ -1,0 +1,114 @@
+[
+  {
+    "description": "own user guide draft",
+    "assignee": "Sara",
+    "deadline": "",
+    "speaker": "John",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "17e830e10cbb"
+    ],
+    "meeting_window": [
+      1,
+      1
+    ]
+  },
+  {
+    "description": "own user guide draft",
+    "assignee": "Sara",
+    "deadline": "",
+    "speaker": "Sara",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "993d329a698d"
+    ],
+    "meeting_window": [
+      1,
+      1
+    ]
+  },
+  {
+    "description": "Create/release checklist",
+    "assignee": "Priya",
+    "deadline": "Not mentioned",
+    "speaker": "Priya",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 0.8,
+    "source_spans": [
+      "2b4f5bb0e99a"
+    ],
+    "meeting_window": [
+      2,
+      2
+    ]
+  },
+  {
+    "description": "Check with security team",
+    "assignee": "Priya",
+    "deadline": "Not mentioned",
+    "speaker": "Priya",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "05ca5ef4193f"
+    ],
+    "meeting_window": [
+      2,
+      2
+    ]
+  },
+  {
+    "description": "schedule test restore",
+    "assignee": "John",
+    "deadline": "",
+    "speaker": "John",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 0.8,
+    "source_spans": [
+      "43579e018986"
+    ],
+    "meeting_window": [
+      3,
+      3
+    ]
+  },
+  {
+    "description": "add [item]",
+    "assignee": "Priya",
+    "deadline": "",
+    "speaker": "Priya",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 0.6,
+    "source_spans": [
+      "29cdea43d64b"
+    ],
+    "meeting_window": [
+      3,
+      3
+    ]
+  },
+  {
+    "description": "complete task",
+    "assignee": "Priya",
+    "deadline": "",
+    "speaker": "Priya",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 0.5,
+    "source_spans": [
+      "4ab369e6ebd2"
+    ],
+    "meeting_window": [
+      3,
+      3
+    ]
+  }
+]
