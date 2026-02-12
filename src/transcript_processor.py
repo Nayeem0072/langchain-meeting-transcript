@@ -3,11 +3,12 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import List, Literal
-from pydantic import BaseModel, Field
+from typing import List, Literal, Optional
+from pydantic import BaseModel, Field, model_validator
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.callbacks import BaseCallbackHandler
+
 
 # Add parent directory to path for config import
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -21,6 +22,10 @@ logging.basicConfig(
     stream=sys.stderr,
 )
 logger = logging.getLogger(__name__)
+
+# Enable debug logging for httpx and openai
+logging.getLogger("httpx").setLevel(logging.DEBUG)
+logging.getLogger("openai").setLevel(logging.DEBUG)
 
 
 class StreamingStderrCallbackHandler(BaseCallbackHandler):
@@ -39,13 +44,43 @@ class StreamingStderrCallbackHandler(BaseCallbackHandler):
         logger.info("LLM call finished.")
 
 
+class ActionDetails(BaseModel):
+    """Action details for action_item intents."""
+    description: str | None = Field(default=None, description="Description of the action")
+    assignee: str | None = Field(default=None, description="Who is assigned to do the action")
+    deadline: str | None = Field(default=None, description="Deadline or timeline mentioned")
+    confidence: float | None = Field(default=None, description="Confidence score (0.0-1.0) for action resolution")
+    
+    @model_validator(mode='before')
+    @classmethod
+    def convert_confidence(cls, data):
+        """Convert string confidence values to floats."""
+        if isinstance(data, dict) and "confidence" in data:
+            conf = data["confidence"]
+            if isinstance(conf, str):
+                # Convert common string values to floats
+                conf_lower = conf.lower()
+                if conf_lower in ["high", "very high"]:
+                    data["confidence"] = 0.9
+                elif conf_lower in ["medium", "moderate"]:
+                    data["confidence"] = 0.6
+                elif conf_lower in ["low"]:
+                    data["confidence"] = 0.3
+                else:
+                    # Try to parse as float, or set to None
+                    try:
+                        data["confidence"] = float(conf)
+                    except (ValueError, TypeError):
+                        data["confidence"] = None
+        return data
+
+
 class SpeakerSegment(BaseModel):
     """Represents a segment of speech with speaker, text, intent, and context metadata."""
     speaker: str = Field(description="Speaker name")
     text: str = Field(description="Exact text spoken (must be exact substring from transcript)")
     intent: Literal[
         "suggestion",
-        "commitment",
         "information",
         "question",
         "decision",
@@ -53,7 +88,6 @@ class SpeakerSegment(BaseModel):
         "agreement",
         "clarification",
     ] = Field(description="Conversational role / intent of the segment")
-    reason: str = Field(description="Short explanation for the intent label")
     resolved_context: str = Field(
         default="",
         description="What earlier topic this refers to, if applicable; empty string if not applicable",
@@ -62,6 +96,18 @@ class SpeakerSegment(BaseModel):
         default=False,
         description="True if reference or meaning cannot be resolved from context",
     )
+    action_details: Optional[ActionDetails] = Field(
+        default_factory=lambda: ActionDetails(),
+        description="Action details. Populated only for action_item intent, otherwise all fields are null.",
+    )
+    
+    @model_validator(mode='before')
+    @classmethod
+    def handle_null_action_details(cls, data):
+        """Convert null action_details to empty ActionDetails object."""
+        if isinstance(data, dict) and data.get("action_details") is None:
+            data["action_details"] = {"description": None, "assignee": None, "deadline": None, "confidence": None}
+        return data
 
 
 class TranscriptSegments(BaseModel):
@@ -76,6 +122,13 @@ class TranscriptProcessor:
         """Initialize the processor with LangChain model."""
         logger.info("Initializing model: %s at %s", config.MODEL_NAME, config.GLM_API_URL)
         callbacks = [StreamingStderrCallbackHandler()]
+        # Build extra_body for Ollama-specific parameters
+        # These are passed directly to Ollama API request body
+        extra_body = {
+            "top_p": config.TOP_P,
+            "repeat_penalty": config.REPEAT_PENALTY,
+            "presence_penalty": config.PRESENCE_PENALTY,
+        }
         # Initialize ChatOpenAI with custom base_url for local GLM4.7 model
         self.llm = ChatOpenAI(
             base_url=config.GLM_API_URL,
@@ -83,121 +136,53 @@ class TranscriptProcessor:
             model=config.MODEL_NAME,
             temperature=config.TEMPERATURE,
             max_tokens=config.MAX_TOKENS,
-            streaming=True,
+            streaming=False,
             callbacks=callbacks,
+            extra_body=extra_body,
         )
         
         # Bind structured output to the model (must be a single Pydantic model, not List[...])
-        self.structured_llm = self.llm.with_structured_output(TranscriptSegments)
+        self.structured_llm = self.llm.with_structured_output(TranscriptSegments, method="json_mode")
         logger.info("Model ready.")
         
         # Create prompt template
         self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are an AI system that extracts ONLY WORK-RELEVANT operational content from meeting transcripts.
+            ("system", """You are a meeting transcript analyzer. Extract only work-relevant segments and classify them.
 
-Your task is analytical, NOT generative.
+KEEP segments about: tasks, decisions, plans, timelines, ownership, risks, technical/business discussion
+DISCARD: greetings, small talk, jokes, filler, ASR noise
 
-You are NOT writing a summary.
-You are NOT continuing patterns.
-You are NOT predicting what comes next.
+INTENT types: suggestion | information | question | decision | action_item | agreement | clarification
 
-You must ONLY extract segments that EXPLICITLY EXIST in the transcript text.
+action_item — use this whenever someone:
+  - assigns or self-assigns a task ("I'll send the report", "can you update the doc")
+  - proposes a concrete next step with implied ownership ("let's send an email about payment")
+  - acknowledges responsibility for a follow-up ("I'll check on that")
+  When in doubt between suggestion and action_item, prefer action_item if a real task is implied.
 
-━━━━━━━━━━━━━━━━━━
-CRITICAL ANTI-HALLUCINATION RULES
-━━━━━━━━━━━━━━━━━━
+For action_item segments, resolve full meaning from context using action_details.
 
-• NEVER invent dialogue
-• NEVER repeat a segment unless it appears again verbatim in the transcript
-• If the same segment text appears multiple times in output but not in transcript → you are hallucinating
-• Each output segment must map to a real, unique position in the transcript
-• STOP extraction when transcript content ends — do NOT continue pattern
-
-If unsure whether a segment exists → DO NOT OUTPUT IT.
-
-━━━━━━━━━━━━━━━━━━
-CONTEXT INTERPRETATION RULE
-━━━━━━━━━━━━━━━━━━
-
-Segments must be interpreted using surrounding conversation context, not in isolation.
-However, context may ONLY come from the provided transcript.
-
-Do NOT infer missing meetings, systems, tickets, or processes.
-
-━━━━━━━━━━━━━━━━━━
-STEP 1 — SEGMENTATION
-━━━━━━━━━━━━━━━━━━
-
-Break transcript into speaker turns exactly as written.
-
-━━━━━━━━━━━━━━━━━━
-STEP 2 — HARD WORK FILTER
-━━━━━━━━━━━━━━━━━━
-
-Only keep segments related to:
-
-• tasks
-• decisions
-• plans
-• timelines
-• ownership
-• risks
-• project/product/technical/business discussion
-
-DISCARD completely:
-
-• small talk
-• jokes
-• greetings
-• filler words
-• ASR noise
-• unclear fragments
-• social talk
-
-Do NOT output discarded segments.
-
-━━━━━━━━━━━━━━━━━━
-STEP 3 — INTENT CLASSIFICATION
-━━━━━━━━━━━━━━━━━━
-
-For each remaining segment classify ONE:
-
-suggestion | commitment | information | question | decision | action_item | agreement | clarification
-
-━━━━━━━━━━━━━━━━━━
-OUTPUT FORMAT
-━━━━━━━━━━━━━━━━━━
-
-Return STRICT JSON.
-
-Each segment must include:
-
+Return JSON:
 {{
-  "speaker": "",
-  "text": "",              ← EXACT substring from transcript
-  "intent": "",
-  "reason": "",
-  "resolved_context": "",
-  "context_unclear": false
+  "segments": [
+    {{
+      "speaker": "",
+      "text": "",
+      "intent": "",
+      "resolved_context": "",
+      "context_unclear": false,
+      "action_details": {{
+        "description": null,
+        "assignee": null,
+        "deadline": null,
+        "confidence": null
+      }}
+    }}
+  ]
 }}
 
-━━━━━━━━━━━━━━━━━━
-LOOP PREVENTION DIRECTIVE
-━━━━━━━━━━━━━━━━━━
-
-Before producing each segment, internally verify:
-
-1. Does this exact text appear in transcript?
-2. Has this exact text already been output?
-3. Am I continuing a pattern instead of analyzing new transcript content?
-
-If any answer is YES → DO NOT OUTPUT.
-
-When no more valid segments remain → STOP.
-
-Do not pad the list.
-Do not repeat structures.
-Do not continue patterns.
+action_details is populated only for action_item. All fields null for other intents.
+text must be an exact substring from the transcript.
 """),
             ("human", "Analyze the following meeting transcript:\n\n{transcript}"),
         ])

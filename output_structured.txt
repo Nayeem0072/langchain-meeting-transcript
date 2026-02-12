@@ -3,240 +3,312 @@
     "speaker": "John",
     "text": "ok so main thing today is the phoenix project timeline and also client delta feedback",
     "intent": "information",
-    "reason": "Topic introduction",
-    "resolved_context": "Meeting agenda setting",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Sara",
     "text": "oh yeah that email was kind of concerning",
     "intent": "information",
-    "reason": "Relating to client feedback",
-    "resolved_context": "Discussing client delta email",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Priya",
     "text": "which part the budget or the scope creep part",
     "intent": "question",
-    "reason": "Clarifying details of the concern",
-    "resolved_context": "Discussing client delta email content",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Sara",
     "text": "mostly the scope part like they added analytics dashboard out of nowhere",
     "intent": "information",
-    "reason": "Detailing the scope issue",
-    "resolved_context": "Discussing client delta email content",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "John",
     "text": "right so first timeline um where are we with backend api work",
     "intent": "question",
-    "reason": "Checking progress on a specific task",
-    "resolved_context": "Discussing phoenix project timeline",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Mike",
     "text": "so the auth service is done mostly except the refresh token logic which broke yesterday but i fixed i think",
     "intent": "information",
-    "reason": "Reporting backend status and an issue",
-    "resolved_context": "Checking backend api work status",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Priya",
     "text": "did you push that or is it still local",
     "intent": "question",
-    "reason": "Checking deployment status",
-    "resolved_context": "Checking backend api work status",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Mike",
-    "text": "uh pushed but the tests are red but like not real red just flaky red",
-    "intent": "information",
-    "reason": "Reporting test results",
-    "resolved_context": "Checking backend api work status",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Mike",
-    "text": "random but standup time tomorrow same",
-    "intent": "suggestion",
-    "reason": "Suggesting meeting frequency",
-    "resolved_context": "Meeting logistics",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Sara",
-    "text": "yes 9 30",
-    "intent": "agreement",
-    "reason": "Confirming meeting time",
-    "resolved_context": "Meeting logistics",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Mike",
-    "text": "9 30 or 9 15 i wrote 9 15 somewhere",
-    "intent": "information",
-    "reason": "Providing alternative information",
-    "resolved_context": "Meeting logistics",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Priya",
-    "text": "calendar says 9 30",
-    "intent": "information",
-    "reason": "Providing factual confirmation",
-    "resolved_context": "Meeting logistics",
-    "context_unclear": false
-  },
-  {
-    "speaker": "John",
-    "text": "9 30",
-    "intent": "decision",
-    "reason": "Finalizing the meeting time",
-    "resolved_context": "Meeting logistics",
-    "context_unclear": false
-  },
-  {
-    "speaker": "John",
-    "text": "any risks we havent talked about",
-    "intent": "question",
-    "reason": "Risk assessment question",
-    "resolved_context": "Project timeline discussion",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Mike",
-    "text": "integration with payment gateway still using sandbox might behave differently live",
-    "intent": "information",
-    "reason": "Identifying a technical risk",
-    "resolved_context": "Risk assessment",
-    "context_unclear": false
-  },
-  {
-    "speaker": "Priya",
-    "text": "do we need extra testing window",
-    "intent": "question",
-    "reason": "Asking about mitigation steps",
-    "resolved_context": "Risk assessment",
-    "context_unclear": false
-  },
-  {
-    "speaker": "John",
-    "text": "yes good call",
-    "intent": "decision",
-    "reason": "Confirming extra testing",
-    "resolved_context": "Risk assessment",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Priya",
     "text": "do we have owner for documentation",
     "intent": "question",
-    "reason": "Asking about task ownership",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Sara",
     "text": "oh shoot not really",
     "intent": "information",
-    "reason": "Stating lack of documentation owner",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "John",
     "text": "sara can you own user guide draft",
     "intent": "action_item",
-    "reason": "Assigning a task",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "Sara is assigned to draft the user guide.",
+    "context_unclear": false,
+    "action_details": {
+      "description": "own user guide draft",
+      "assignee": "Sara",
+      "deadline": null,
+      "confidence": 1.0
+    }
   },
   {
     "speaker": "Sara",
     "text": "yeah okay but need inputs from you both",
-    "intent": "commitment",
-    "reason": "Accepting task and setting condition",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "intent": "agreement",
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Mike",
     "text": "sure",
     "intent": "agreement",
-    "reason": "Confirming to provide inputs",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Priya",
     "text": "we also need release checklist",
-    "intent": "information",
-    "reason": "Identifying missing item",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "intent": "suggestion",
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
+  },
+  {
+    "speaker": "John",
+    "text": "right",
+    "intent": "agreement",
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "John",
     "text": "okay wrapping up action recap um wait did we talk about security review",
     "intent": "question",
-    "reason": "Recalling a previous topic",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "John",
     "text": "we need at least internal review",
     "intent": "decision",
-    "reason": "Making a requirement decision",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "Priya",
     "text": "ill check with security team",
     "intent": "action_item",
-    "reason": "Assigning task",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "Priya will verify with the security team regarding the internal review requirement.",
+    "context_unclear": false,
+    "action_details": {
+      "description": "check with security team",
+      "assignee": "Priya",
+      "deadline": null,
+      "confidence": 1.0
+    }
   },
   {
     "speaker": "Mike",
     "text": "also backup strategy for database i dont remember if we tested restore",
     "intent": "information",
-    "reason": "Identifying a risk",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   },
   {
     "speaker": "John",
     "text": "yeah lets schedule test restore",
-    "intent": "decision",
-    "reason": "Deciding to mitigate risk",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "intent": "action_item",
+    "resolved_context": "The team will schedule a test restore for the database backup strategy.",
+    "context_unclear": false,
+    "action_details": {
+      "description": "schedule test restore",
+      "assignee": null,
+      "deadline": null,
+      "confidence": 1.0
+    }
   },
   {
     "speaker": "Priya",
     "text": "adding",
     "intent": "action_item",
-    "reason": "Confirming action",
-    "resolved_context": "Project management",
-    "context_unclear": false
+    "resolved_context": "Priya will add the test restore task to the action list.",
+    "context_unclear": false,
+    "action_details": {
+      "description": "adding [test restore]",
+      "assignee": "Priya",
+      "deadline": null,
+      "confidence": 1.0
+    }
   },
   {
     "speaker": "John",
     "text": "okay anything else",
     "intent": "question",
-    "reason": "Closing check",
-    "resolved_context": "Meeting conclusion",
-    "context_unclear": false
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
+  },
+  {
+    "speaker": "Sara",
+    "text": "nope",
+    "intent": "information",
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
+  },
+  {
+    "speaker": "Mike",
+    "text": "all good",
+    "intent": "agreement",
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
+  },
+  {
+    "speaker": "Priya",
+    "text": "done",
+    "intent": "agreement",
+    "resolved_context": "",
+    "context_unclear": false,
+    "action_details": {
+      "description": null,
+      "assignee": null,
+      "deadline": null,
+      "confidence": null
+    }
   }
 ]

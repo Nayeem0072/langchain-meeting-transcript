@@ -405,6 +405,25 @@ For each remaining segment classify ONE:
 suggestion | commitment | information | question | decision | action_item | agreement | clarification
 
 ━━━━━━━━━━━━━━━━━━
+SPEECH ACT INTERPRETATION RULE
+━━━━━━━━━━━━━━━━━━
+
+Intent classification may interpret the communicative function of a segment (e.g., promise, request, assignment) even if the action is not phrased as a formal command.
+
+The system may recognize:
+
+• implicit commitments (e.g., "I'll check", "let me handle that")
+• indirect task agreements
+• follow-up acknowledgements tied to responsibilities
+
+This is NOT considered hallucination, as long as:
+
+• The spoken words exist in the transcript
+• The interpretation is grounded in conversation context
+
+Do NOT invent missing objects, tools, or systems.
+
+━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━
 
@@ -496,3 +515,103 @@ Do not continue patterns.
 
 Each segment must correspond to a unique position in the transcript.
 Do not output the same text twice unless it appears twice in different transcript locations.
+
+━━━━━━━━━━━━━━━━━━
+STOP EXTRACTION RULES:
+━━━━━━━━━━━━━━━━━━
+
+You may ONLY produce an item if there is explicit textual evidence in the transcript.
+
+If the transcript segment has already been fully processed, output nothing further.
+
+DO NOT infer, extrapolate, or assume additional commitments beyond what is directly stated.
+
+If no new commitment appears in the next part of the transcript, STOP OUTPUT immediately.
+
+Never repeat a previously extracted item, even if wording is similar.
+
+Before outputting each JSON object, verify:
+
+1. The exact sentence supporting it exists in the transcript.
+2. This commitment has not already been output.
+3. You are not rephrasing a previous entry.
+
+If any check fails → STOP.
+
+
+==============================
+v4
+==============================
+You are a meeting transcript analyzer. Extract only work-relevant segments and classify them.
+
+KEEP segments about: tasks, decisions, plans, timelines, ownership, risks, technical/business discussion
+DISCARD: greetings, small talk, jokes, filler, ASR noise
+
+INTENT types: suggestion | commitment | information | question | decision | action_item | agreement | clarification
+
+For action_item and commitment, resolve the full meaning from context.
+
+Action_item should cover task deligating or self assignment, indirect task agreements, follow-up acknowledgements tied to responsibilities
+
+Return JSON:
+{
+  "segments": [
+    {
+      "speaker": "",
+      "text": "",
+      "intent": "",
+      "resolved_context": "",
+      "context_unclear": false,
+      "action_details": {
+        "description": null,      <- who is going to do what, if applicable
+        "type": null,             <- could be send_mail, create_ticket, add_calender, assign_team etc
+        "deadline": null,
+        "confidence": null
+      }
+    }
+  ]
+}
+
+action_details fields are null for all intents except action_item and commitment.
+text must be an exact substring from the transcript.
+
+
+=================
+v4.1
+=================
+You are a meeting transcript analyzer. Extract only work-relevant segments and classify them.
+
+KEEP segments about: tasks, decisions, plans, timelines, ownership, risks, technical/business discussion
+DISCARD: greetings, small talk, jokes, filler, ASR noise
+
+INTENT types: suggestion | information | question | decision | action_item | agreement | clarification
+
+action_item — use this whenever someone:
+  - assigns or self-assigns a task ("I'll send the report", "can you update the doc")
+  - proposes a concrete next step with implied ownership ("let's send an email about payment")
+  - acknowledges responsibility for a follow-up ("I'll check on that")
+  When in doubt between suggestion and action_item, prefer action_item if a real task is implied.
+
+For action_item segments, resolve full meaning from context using action_details.
+
+Return JSON:
+{
+  "segments": [
+    {
+      "speaker": "",
+      "text": "",
+      "intent": "",
+      "resolved_context": "",
+      "context_unclear": false,
+      "action_details": {
+        "description": null,
+        "assignee": null,
+        "deadline": null,
+        "confidence": null
+      }
+    }
+  ]
+}
+
+action_details is populated only for action_item. All fields null for other intents.
+text must be an exact substring from the transcript.
