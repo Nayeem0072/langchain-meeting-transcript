@@ -25,24 +25,79 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main():
-    """CLI entry point for LangGraph action extraction."""
-    if len(sys.argv) < 2:
-        print("Usage: python langgraph_main.py <input.json> [output.json]", file=sys.stderr)
-        sys.exit(1)
+def load_transcript(input_file: str) -> str:
+    """
+    Load transcript from input file.
+    Supports both .txt (plain text) and .json (with transcript_raw field) formats.
     
-    input_file = sys.argv[1]
-    output_file = sys.argv[2] if len(sys.argv) > 2 else "output_langgraph.json"
+    Args:
+        input_file: Path to input file (.txt or .json)
+        
+    Returns:
+        Transcript text as string
+    """
+    input_path = Path(input_file)
     
-    try:
-        logger.info("Loading input file: %s", input_file)
+    if input_path.suffix.lower() == '.txt':
+        # Plain text file - read entire content as transcript
+        logger.info("Reading transcript from plain text file: %s", input_file)
+        with open(input_file, 'r', encoding='utf-8') as f:
+            transcript = f.read()
+        return transcript.strip()
+    
+    elif input_path.suffix.lower() == '.json':
+        # JSON file - extract transcript_raw field
+        logger.info("Reading transcript from JSON file: %s", input_file)
         with open(input_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
         if "transcript_raw" not in data:
             raise ValueError("Input JSON must contain 'transcript_raw' field")
         
-        transcript = data["transcript_raw"]
+        return data["transcript_raw"]
+    
+    else:
+        # Try to auto-detect: if it's valid JSON, treat as JSON; otherwise as text
+        logger.info("Auto-detecting file format for: %s", input_file)
+        with open(input_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        try:
+            # Try parsing as JSON first
+            data = json.loads(content)
+            if "transcript_raw" in data:
+                return data["transcript_raw"]
+            else:
+                raise ValueError("JSON file must contain 'transcript_raw' field")
+        except json.JSONDecodeError:
+            # Not JSON, treat as plain text
+            logger.info("File is not JSON, treating as plain text transcript")
+            return content.strip()
+
+
+def main():
+    """CLI entry point for LangGraph action extraction."""
+    # Default files
+    default_input = "input_langraph.txt"
+    default_output = "output_langgraph.json"
+    
+    if len(sys.argv) < 2:
+        # No arguments provided - use defaults
+        input_file = default_input
+        output_file = default_output
+        logger.info("No arguments provided, using defaults: %s -> %s", input_file, output_file)
+    elif len(sys.argv) == 2:
+        # Only input file provided
+        input_file = sys.argv[1]
+        output_file = default_output
+    else:
+        # Both input and output provided
+        input_file = sys.argv[1]
+        output_file = sys.argv[2]
+    
+    try:
+        logger.info("Loading input file: %s", input_file)
+        transcript = load_transcript(input_file)
         logger.info("Input loaded (%d characters). Starting LangGraph extraction.", len(transcript))
         
         # Extract actions
@@ -61,6 +116,9 @@ def main():
         sys.exit(1)
     except json.JSONDecodeError as e:
         logger.error("Invalid JSON in input file: %s", e)
+        sys.exit(1)
+    except ValueError as e:
+        logger.error("Invalid input format: %s", e)
         sys.exit(1)
     except Exception as e:
         logger.error("Error: %s", e, exc_info=True)

@@ -75,21 +75,45 @@ Transcript → Segmenter → Loop:
 # Install dependencies (if not already installed)
 pip install -r requirements.txt
 
-# Run the LangGraph system
-python run_langgraph.py example_input.json output_langgraph.json
+# Simplest usage - uses defaults (input_langraph.txt -> output_langgraph.json)
+python run_langgraph.py
+
+# Specify input file only (output defaults to output_langgraph.json)
+python run_langgraph.py input_langraph.txt
+
+# Specify both input and output
+python run_langgraph.py input_langraph.txt output_langgraph.json
+
+# Or with JSON file (also supported)
+python run_langgraph.py example_input.json custom_output.json
 
 # Or run directly
-python -m src.langgraph_main example_input.json output_langgraph.json
+python -m src.langgraph_main
 ```
 
 ## Input Format
 
-Input JSON file should contain:
+The LangGraph system supports two input formats:
+
+### 1. Plain Text File (`.txt`) - Recommended
+Simply put the transcript text in a `.txt` file:
+```
+Speaker1: text here
+
+Speaker2: more text...
+```
+
+Example: `input_langraph.txt`
+
+### 2. JSON File (`.json`) - Also Supported
+JSON file with `transcript_raw` field:
 ```json
 {
   "transcript_raw": "Speaker1: text here\n\nSpeaker2: more text..."
 }
 ```
+
+The system auto-detects the format based on file extension, or tries JSON first if no extension.
 
 ## Output Format
 
@@ -131,7 +155,60 @@ The `GraphState` maintains:
 
 ## Configuration
 
-Uses the same `config.py` and `.env` settings as the original system:
-- `GLM_API_URL`: API endpoint
-- `MODEL_NAME`: Model name (default: "glm4-7")
-- `TEMPERATURE`, `MAX_TOKENS`, etc.: Model parameters
+The LangGraph system uses a separate configuration file: `src/langgraph_llm_config.py`
+
+### Separate Configurations for Each Node
+
+Each LLM node has its own optimized configuration:
+
+1. **Relevance Gate Node** - Fast filtering (low temp, small output)
+   - `RELEVANCE_GATE_*` environment variables
+   - Default: temperature=0.1, max_tokens=100
+
+2. **Local Extractor Node** - Structured extraction (medium temp, structured output)
+   - `LOCAL_EXTRACTOR_*` environment variables
+   - Default: temperature=0.2, max_tokens=2000
+
+3. **Context Resolver Node** - Cross-chunk reasoning (higher temp for reasoning)
+   - `CONTEXT_RESOLVER_*` environment variables
+   - Default: temperature=0.3, max_tokens=2000
+
+### Environment Variables
+
+You can override defaults by setting these in your `.env` file:
+
+```bash
+# Relevance Gate
+RELEVANCE_GATE_MODEL_NAME=glm4-7
+RELEVANCE_GATE_API_URL=http://localhost:8000/v1
+RELEVANCE_GATE_TEMPERATURE=0.1
+RELEVANCE_GATE_MAX_TOKENS=100
+RELEVANCE_GATE_TOP_P=0.15
+RELEVANCE_GATE_REPEAT_PENALTY=1.2
+RELEVANCE_GATE_PRESENCE_PENALTY=0.6
+
+# Local Extractor
+LOCAL_EXTRACTOR_MODEL_NAME=glm4-7
+LOCAL_EXTRACTOR_API_URL=http://localhost:8000/v1
+LOCAL_EXTRACTOR_TEMPERATURE=0.2
+LOCAL_EXTRACTOR_MAX_TOKENS=2000
+LOCAL_EXTRACTOR_TOP_P=0.15
+LOCAL_EXTRACTOR_REPEAT_PENALTY=1.2
+LOCAL_EXTRACTOR_PRESENCE_PENALTY=0.6
+
+# Context Resolver
+CONTEXT_RESOLVER_MODEL_NAME=glm4-7
+CONTEXT_RESOLVER_API_URL=http://localhost:8000/v1
+CONTEXT_RESOLVER_TEMPERATURE=0.3
+CONTEXT_RESOLVER_MAX_TOKENS=2000
+CONTEXT_RESOLVER_TOP_P=0.2
+CONTEXT_RESOLVER_REPEAT_PENALTY=1.2
+CONTEXT_RESOLVER_PRESENCE_PENALTY=0.6
+
+# Fallback defaults (used if node-specific vars not set)
+LANGGRAPH_MODEL_NAME=glm4-7
+LANGGRAPH_API_URL=http://localhost:8000/v1
+LANGGRAPH_API_KEY=your-key-here
+```
+
+If node-specific variables are not set, the system falls back to `LANGGRAPH_*` defaults, or ultimately to the original `config.py` values.

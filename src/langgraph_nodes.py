@@ -8,30 +8,67 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.output_parsers import JsonOutputParser
 
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-import config
-
 from .langgraph_state import GraphState
 from .langgraph_models import Segment, Action, ActionDetails
+from .langgraph_llm_config import (
+    RELEVANCE_GATE_CONFIG,
+    LOCAL_EXTRACTOR_CONFIG,
+    CONTEXT_RESOLVER_CONFIG,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def create_llm():
-    """Create and configure the LLM."""
+def create_relevance_gate_llm():
+    """Create LLM configured for relevance gate node."""
+    cfg = RELEVANCE_GATE_CONFIG
     extra_body = {
-        "top_p": config.TOP_P,
-        "repeat_penalty": config.REPEAT_PENALTY,
-        "presence_penalty": config.PRESENCE_PENALTY,
+        "top_p": cfg["top_p"],
+        "repeat_penalty": cfg["repeat_penalty"],
+        "presence_penalty": cfg["presence_penalty"],
     }
     return ChatOpenAI(
-        base_url=config.GLM_API_URL,
-        api_key=config.GLM_API_KEY or "not-needed",
-        model=config.MODEL_NAME,
-        temperature=config.TEMPERATURE,
-        max_tokens=config.MAX_TOKENS,
+        base_url=cfg["api_url"],
+        api_key=cfg["api_key"] or "not-needed",
+        model=cfg["model_name"],
+        temperature=cfg["temperature"],
+        max_tokens=cfg["max_tokens"],
+        extra_body=extra_body,
+    )
+
+
+def create_local_extractor_llm():
+    """Create LLM configured for local extractor node."""
+    cfg = LOCAL_EXTRACTOR_CONFIG
+    extra_body = {
+        "top_p": cfg["top_p"],
+        "repeat_penalty": cfg["repeat_penalty"],
+        "presence_penalty": cfg["presence_penalty"],
+    }
+    return ChatOpenAI(
+        base_url=cfg["api_url"],
+        api_key=cfg["api_key"] or "not-needed",
+        model=cfg["model_name"],
+        temperature=cfg["temperature"],
+        max_tokens=cfg["max_tokens"],
+        extra_body=extra_body,
+    )
+
+
+def create_context_resolver_llm():
+    """Create LLM configured for context resolver node."""
+    cfg = CONTEXT_RESOLVER_CONFIG
+    extra_body = {
+        "top_p": cfg["top_p"],
+        "repeat_penalty": cfg["repeat_penalty"],
+        "presence_penalty": cfg["presence_penalty"],
+    }
+    return ChatOpenAI(
+        base_url=cfg["api_url"],
+        api_key=cfg["api_key"] or "not-needed",
+        model=cfg["model_name"],
+        temperature=cfg["temperature"],
+        max_tokens=cfg["max_tokens"],
         extra_body=extra_body,
     )
 
@@ -99,7 +136,7 @@ def relevance_gate_node(state: GraphState) -> GraphState:
     chunk = chunks[chunk_index]
     logger.info(f"RelevanceGate: Checking chunk {chunk_index + 1}/{len(chunks)}")
     
-    llm = create_llm()
+    llm = create_relevance_gate_llm()
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a filter for meeting transcripts. Determine if a chunk contains work-relevant operational content.
 
@@ -141,7 +178,7 @@ def local_extractor_node(state: GraphState) -> GraphState:
     
     logger.info(f"LocalExtractor: Extracting from chunk {chunk_index + 1}")
     
-    llm = create_llm()
+    llm = create_local_extractor_llm()
     
     # Use JSON mode for structured extraction
     from pydantic import BaseModel as PydanticBaseModel
@@ -302,7 +339,7 @@ def context_resolver_node(state: GraphState) -> GraphState:
     logger.info(f"ContextResolver: {len(unresolved_references)} unresolved references, {len(active_topics)} active topics")
     
     # Use LLM for intelligent context resolution
-    llm = create_llm()
+    llm = create_context_resolver_llm()
     
     # Prepare context for resolution
     context_text = ""

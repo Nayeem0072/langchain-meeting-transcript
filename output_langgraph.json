@@ -1,5 +1,101 @@
 [
   {
+    "description": "writing that down",
+    "assignee": "Priya",
+    "deadline": null,
+    "speaker": "Priya",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "1a2a0a65e09c"
+    ],
+    "meeting_window": [
+      1,
+      1
+    ]
+  },
+  {
+    "description": "draft it",
+    "assignee": "John",
+    "deadline": "after this",
+    "speaker": "John",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "b7a42f199546"
+    ],
+    "meeting_window": [
+      4,
+      4
+    ]
+  },
+  {
+    "description": "add bug bash",
+    "assignee": "John",
+    "deadline": "March 10",
+    "speaker": "John",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "317a0a154545"
+    ],
+    "meeting_window": [
+      4,
+      4
+    ]
+  },
+  {
+    "description": "talk to finance",
+    "assignee": "John",
+    "deadline": "not mentioned",
+    "speaker": "John",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "ba5141e4df0c"
+    ],
+    "meeting_window": [
+      5,
+      5
+    ]
+  },
+  {
+    "description": "Create a task for fixing alert rules",
+    "assignee": "Priya",
+    "deadline": "",
+    "speaker": "John",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "b30ee3bdd2f6"
+    ],
+    "meeting_window": [
+      6,
+      6
+    ]
+  },
+  {
+    "description": "Add to list",
+    "assignee": "Priya",
+    "deadline": "",
+    "speaker": "Priya",
+    "verb": "do",
+    "object_text": null,
+    "confidence": 1.0,
+    "source_spans": [
+      "27108bc59bbf"
+    ],
+    "meeting_window": [
+      6,
+      6
+    ]
+  },
+  {
     "description": "own user guide draft",
     "assignee": "Sara",
     "deadline": "",
@@ -8,107 +104,75 @@
     "object_text": null,
     "confidence": 1.0,
     "source_spans": [
-      "17e830e10cbb"
+      "b28cea67ea3d"
     ],
     "meeting_window": [
-      1,
-      1
+      8,
+      8
     ]
   },
   {
-    "description": "own user guide draft",
-    "assignee": "Sara",
+    "description": "provide inputs for user guide draft",
+    "assignee": "John, Mike",
     "deadline": "",
     "speaker": "Sara",
     "verb": "do",
     "object_text": null,
     "confidence": 1.0,
     "source_spans": [
-      "993d329a698d"
+      "33ec249df5d0"
     ],
     "meeting_window": [
-      1,
-      1
+      8,
+      8
     ]
   },
   {
-    "description": "Create/release checklist",
+    "description": "create release checklist",
     "assignee": "Priya",
-    "deadline": "Not mentioned",
+    "deadline": "",
     "speaker": "Priya",
     "verb": "do",
     "object_text": null,
     "confidence": 0.8,
     "source_spans": [
-      "2b4f5bb0e99a"
+      "d04bbc200c23"
     ],
     "meeting_window": [
-      2,
-      2
+      8,
+      8
     ]
   },
   {
-    "description": "Check with security team",
+    "description": "check with security team",
     "assignee": "Priya",
-    "deadline": "Not mentioned",
+    "deadline": null,
     "speaker": "Priya",
     "verb": "do",
     "object_text": null,
     "confidence": 1.0,
     "source_spans": [
-      "05ca5ef4193f"
+      "0508b84969a5"
     ],
     "meeting_window": [
-      2,
-      2
+      9,
+      9
     ]
   },
   {
-    "description": "schedule test restore",
-    "assignee": "John",
-    "deadline": "",
-    "speaker": "John",
-    "verb": "do",
-    "object_text": null,
-    "confidence": 0.8,
-    "source_spans": [
-      "43579e018986"
-    ],
-    "meeting_window": [
-      3,
-      3
-    ]
-  },
-  {
-    "description": "add [item]",
+    "description": "adding [to agenda/list]",
     "assignee": "Priya",
-    "deadline": "",
+    "deadline": null,
     "speaker": "Priya",
     "verb": "do",
     "object_text": null,
-    "confidence": 0.6,
+    "confidence": 1.0,
     "source_spans": [
-      "29cdea43d64b"
+      "1afaa52dc2eb"
     ],
     "meeting_window": [
-      3,
-      3
-    ]
-  },
-  {
-    "description": "complete task",
-    "assignee": "Priya",
-    "deadline": "",
-    "speaker": "Priya",
-    "verb": "do",
-    "object_text": null,
-    "confidence": 0.5,
-    "source_spans": [
-      "4ab369e6ebd2"
-    ],
-    "meeting_window": [
-      3,
-      3
+      9,
+      9
     ]
   }
 ]
