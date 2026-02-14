@@ -199,17 +199,17 @@ Extract segments that contain:
 
 For each segment, identify:
 - speaker: Who said it
-- text: Exact text from transcript
+- text: Exact text from transcript (must be exact substring)
 - intent: suggestion | information | question | decision | action_item | agreement | clarification
 - resolved_context: What this refers to (if applicable, else empty string)
 - context_unclear: true if reference cannot be resolved
 - action_details: Only for action_item intent:
-  - description: What needs to be done
-  - assignee: Who is responsible
-  - deadline: Timeline mentioned
+  - description: FULL, SELF-CONTAINED description of what needs to be done. Use context from the chunk to expand pronouns and references. BAD: "draft it", "writing that down", "add to list". GOOD: "Draft email to Client Delta to reset expectations, including phased delivery plan and scope change impact", "Note to circle back to flaky tests later", "Add task for fixing monitoring alert rules to list". Always include enough detail that someone reading only the description understands the action.
+  - assignee: Who is responsible (name or role)
+  - deadline: Timeline mentioned (e.g. "March 10", "after the meeting", "end of month") or null
   - confidence: 0.0-1.0
 
-Return JSON array of segments."""),
+CRITICAL for description: Resolve "it", "that", "this", "that thing" from nearby turns. If someone says "ill draft it after this", look for what "it" refers to (e.g. "update email to client") and write that in the description."""),
         ("human", "Extract segments from this chunk:\n\n{chunk}"),
     ])
     
